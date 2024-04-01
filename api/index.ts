@@ -5,6 +5,9 @@ import { z } from "zod";
 import getDeckboxDecklistFromMoxfield, {
   checkMoxfieldUrl,
 } from "../clients/moxfield";
+import getDeckboxDecklistFromArchidekt, {
+  checkArchidektUrl,
+} from "../clients/archidekt";
 
 export const config = {
   runtime: "edge",
@@ -27,6 +30,10 @@ app.get("/decklist", zValidator("query", decklistSchema), async (c) => {
   const { url } = c.req.valid("query");
   if (checkMoxfieldUrl(url)) {
     const decklist = await getDeckboxDecklistFromMoxfield(url);
+    return c.json({ decklist });
+  }
+  if (checkArchidektUrl(url)) {
+    const decklist = await getDeckboxDecklistFromArchidekt(url);
     return c.json({ decklist });
   }
   return c.json({ message: "Invalid URL" }, 400);
