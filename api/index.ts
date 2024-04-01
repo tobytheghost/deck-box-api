@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
+import { cors } from "hono/cors";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import getDeckboxDecklistFromMoxfield, {
@@ -15,8 +16,11 @@ export const config = {
 
 const app = new Hono().basePath("/api");
 
-app.get("/", (c) => {
-  return c.json({ message: "Hello Hono!" });
+app.use("*", (c, next) => {
+  const wrapped = cors({
+    origin: "http://localhost:3000",
+  });
+  return wrapped(c, next);
 });
 
 // Decklist
