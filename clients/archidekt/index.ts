@@ -51,6 +51,7 @@ const mapArchitektCardToDeckboxCard = (card: ArchitektCard) => ({
   scryfallId: card.uid,
   name: card.name,
   set: card.setCode,
+  quantity: card.qty,
   isFoil: card.modifier.toLowerCase() === "foil",
   isAlter: false,
   isProxy: false,

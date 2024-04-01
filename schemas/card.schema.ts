@@ -5,6 +5,7 @@ export const cardSchema = z.object({
   scryfallId: z.string(),
   name: z.string(),
   set: z.string(),
+  quantity: z.number(),
   isFoil: z.boolean(),
   isAlter: z.boolean(),
   isProxy: z.boolean(),

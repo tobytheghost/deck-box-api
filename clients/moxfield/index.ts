@@ -43,6 +43,7 @@ const mapMoxfieldCardToDeckboxCard = (card: MoxfieldCard) => ({
   scryfallId: card.card.scryfall_id,
   name: card.card.name,
   set: card.card.set,
+  quantity: card.quantity,
   isFoil: card.isFoil,
   isAlter: card.isAlter,
   isProxy: card.isProxy,
