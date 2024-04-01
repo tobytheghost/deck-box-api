@@ -22,10 +22,17 @@ const moxfieldCardSchema = z.object({
 
 const moxfieldDecklistSchema = z.object({
   id: z.string(),
+  publicId: z.string(),
   name: z.string(),
   description: z.string(),
   format: z.string(),
   publicUrl: z.string(),
+  colorIdentity: z.array(z.string()),
+  createdAtUtc: z.string(),
+  lastUpdatedAtUtc: z.string(),
+  createdByUser: z.object({
+    displayName: z.string(),
+  }),
   boards: z.object({
     commanders: z.object({
       count: z.number(),
@@ -52,6 +59,15 @@ const mapMoxfieldCardToDeckboxCard = (card: MoxfieldCard) => ({
 
 const mapToDecklist = (moxfieldDecklist: MoxfieldDecklist): DeckboxDecklist => {
   return {
+    id: moxfieldDecklist.publicId,
+    importedFrom: "moxfield",
+    name: moxfieldDecklist.name,
+    description: moxfieldDecklist.description,
+    format: moxfieldDecklist.format,
+    publicUrl: moxfieldDecklist.publicUrl,
+    createdAt: moxfieldDecklist.createdAtUtc,
+    lastUpdated: moxfieldDecklist.lastUpdatedAtUtc,
+    createdBy: moxfieldDecklist.createdByUser.displayName,
     commanders: Object.values(moxfieldDecklist.boards.commanders.cards).map(
       mapMoxfieldCardToDeckboxCard
     ),

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { decklistSchema } from "../../schemas/decklist.schema";
 import { getScryfallImagesFromUid } from "../scryfall";
 
-type ArchitektDecklist = Awaited<ReturnType<typeof getArchidektDeckData>>;
+type ArchitektDecklist = z.infer<typeof archidektDecklistSchema>;
 type ArchitektCard = z.infer<typeof archidektCardSchema>;
 
 type DeckboxDecklist = z.infer<typeof decklistSchema>;
@@ -22,7 +22,9 @@ const archidektDecklistSchema = z.object({
     pageProps: z.object({
       redux: z.object({
         deck: z.object({
+          id: z.number(),
           name: z.string(),
+          format: z.number(),
           owner: z.string(),
           updatedAt: z.string(),
           createdAt: z.string(),
@@ -31,7 +33,37 @@ const archidektDecklistSchema = z.object({
       }),
     }),
   }),
+  query: z.object({
+    deckInfo: z.array(z.string()),
+  }),
 });
+
+const archidektFormatMap = {
+  1: "standard",
+  2: "modern",
+  3: "commander",
+  4: "legacy",
+  5: "vintage",
+  6: "pauper",
+  7: "custom",
+  8: "frontier",
+  9: "future-standard",
+  10: "penny-dreadful",
+  11: "1v1-commander",
+  12: "duel-commander",
+  13: "brawl",
+  14: "oathbreaker",
+  15: "pioneer",
+  16: "historic",
+  17: "pauper-commander",
+  18: "alchemy",
+  19: "explorer",
+  20: "historic-brawl",
+  21: "gladiator",
+  22: "premodern",
+  23: "predh",
+  24: "timeless",
+} as const;
 
 const getArchidektDeckData = async (url: string) => {
   const response = await fetch(url);
@@ -42,7 +74,6 @@ const getArchidektDeckData = async (url: string) => {
     .split("</script>")[0];
   if (!script) throw new Error("Failed to parse deck data");
   const data = JSON.parse(script);
-  //   return data;
   return archidektDecklistSchema.parse(data);
 };
 
@@ -61,10 +92,20 @@ const mapArchitektCardToDeckboxCard = (card: ArchitektCard) => ({
 const mapToDecklist = (
   archidektDecklist: ArchitektDecklist
 ): DeckboxDecklist => {
-  const cards = Object.values(
-    archidektDecklist.props.pageProps.redux.deck.cardMap
-  );
+  const { deck } = archidektDecklist.props.pageProps.redux;
+  const cards = Object.values(deck.cardMap);
   return {
+    id: `${deck.id}`,
+    importedFrom: "archidekt",
+    name: deck.name,
+    description: "",
+    format:
+      archidektFormatMap[deck.format as keyof typeof archidektFormatMap] ||
+      "custom",
+    publicUrl: `https://www.archidekt.com/decks/${archidektDecklist.query.deckInfo[0]}/${archidektDecklist.query.deckInfo[1]}`,
+    createdAt: deck.createdAt,
+    lastUpdated: deck.updatedAt,
+    createdBy: deck.owner,
     commanders: cards
       .filter((card) => card.categories.includes("Commander"))
       .map(mapArchitektCardToDeckboxCard),

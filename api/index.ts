@@ -27,16 +27,21 @@ const decklistSchema = z.object({
 });
 
 app.get("/decklist", zValidator("query", decklistSchema), async (c) => {
-  const { url } = c.req.valid("query");
-  if (checkMoxfieldUrl(url)) {
-    const decklist = await getDeckboxDecklistFromMoxfield(url);
-    return c.json({ decklist });
+  try {
+    const { url } = c.req.valid("query");
+    if (checkMoxfieldUrl(url)) {
+      const decklist = await getDeckboxDecklistFromMoxfield(url);
+      return c.json({ decklist });
+    }
+    if (checkArchidektUrl(url)) {
+      const decklist = await getDeckboxDecklistFromArchidekt(url);
+      return c.json({ decklist });
+    }
+    return c.json({ message: "Invalid URL" }, 400);
+  } catch (error) {
+    console.error(error);
+    return c.json({ message: "Internal server error" }, 500);
   }
-  if (checkArchidektUrl(url)) {
-    const decklist = await getDeckboxDecklistFromArchidekt(url);
-    return c.json({ decklist });
-  }
-  return c.json({ message: "Invalid URL" }, 400);
 });
 
 // Error handling
